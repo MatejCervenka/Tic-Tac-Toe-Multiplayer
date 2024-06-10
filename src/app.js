@@ -1,7 +1,11 @@
 const path = require('path');
-let express = require('express');
-let app = express();
+const express = require('express');
 const cookieParser = require('cookie-parser');
+
+const app = express();
+const PROJECT_ROOT = path.join(__dirname, "..")
+const PORT = process.env.PORT || 8000
+
 let playerCount = 0;
 let gameId = 0;
 let currentPlayer = 'O';
@@ -10,8 +14,16 @@ let array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
 app.use(cookieParser());
 
+app.use(express.static(path.join(PROJECT_ROOT, 'public')))
+
+//listen vytvoří srv
+app.get("/", function(req, res){
+    res.sendFile('views/index.html', { root: PROJECT_ROOT } )
+    console.log('Welcome! Your ID is: ' + req.cookies.userId);
+});
+
 app.get("/array", function(req,res){
-res.send(JSON.stringify(array));
+    res.send(JSON.stringify(array));
 });
 
 app.use((req, res, next) => {
@@ -35,12 +47,13 @@ app.use((req, res, next) => {
     if(playerCount == 0){
         gameId = 0;
         res.cookie('gameId', gameId);
-        }else if(gameId == 0 && playerCount == 2){
+    }else if(gameId == 0 && playerCount == 2){
         gameId = Math.random();
         res.cookie('gameId', gameId);
-        }
+    }
     next();
 });
+
 app.get('/logout', (req, res) => {
     // Clear the user ID cookie by setting its expiration date to the past
     res.clearCookie('userId');
@@ -50,17 +63,13 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/win',(req, res)=>{
-	let gameFinished = req.query.win;
+    let gameFinished = req.query.win;
 });
+
 //app.set('view engine', ejs);
 
-//listen vytvoří srv
-app.get("/", function(req, res){
-    res.sendFile(path.join(__dirname,'views','index.html'));
-    console.log('Welcome! Your ID is: ' + req.cookies.userId);
-});
-
 // GET /click
+
 // nastavi hodnotu v p>  res.send("ok");
 app.post('/click', (req, res) => {
     const id = req.query.id;
@@ -81,7 +90,6 @@ app.get('/current', (req, res) => {
 	res.send("/TicTacToeSingle Final/HTML");
 });*/
 
-const PORT = 2000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
